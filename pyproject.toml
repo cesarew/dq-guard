@@ -1,5 +1,6 @@
 [build-system]
-requires = ["setuptools>=61"]
+# PEP 639（license 写成 SPDX 字符串 + license-files）需要 setuptools>=77
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,7 +11,11 @@ readme = "README.md"
 # 下限 3.10：Python 3.9 已于 2025-10 停止支持，且 ubuntu-latest（Ubuntu 26.04）
 # 的 actions/python-versions 清单里已不再提供 3.9，无法在 CI 中验证。
 requires-python = ">=3.10"
-license = { text = "MIT" }
+# PEP 639：license 用 SPDX 表达式（字符串），不要再用 { text = "MIT" } 的 TOML 表。
+# 旧的表写法与 `License :: OSI Approved ::` 分类器都已被弃用，
+# setuptools 给出的期限是 2027-02-18，届时会被移除。
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
   { name = "cesarew", email = "cesarew@users.noreply.github.com" },
 ]
@@ -26,7 +31,6 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
