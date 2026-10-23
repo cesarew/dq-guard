@@ -7,7 +7,9 @@ name = "dq-guard"
 version = "0.1.0"
 description = "Zero-dependency declarative data quality checks for CSV/TSV, with first-class support for Chinese business data."
 readme = "README.md"
-requires-python = ">=3.9"
+# 下限 3.10：Python 3.9 已于 2025-10 停止支持，且 ubuntu-latest（Ubuntu 26.04）
+# 的 actions/python-versions 清单里已不再提供 3.9，无法在 CI 中验证。
+requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [
   { name = "cesarew", email = "cesarew@users.noreply.github.com" },
@@ -28,6 +30,10 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Software Development :: Quality Assurance",
   "Topic :: Database",
 ]
@@ -51,7 +57,7 @@ include = ["dq_guard*"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
