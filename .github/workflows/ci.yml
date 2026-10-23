@@ -23,9 +23,22 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # 断言「运行时依赖必须为空」。
+      # 注意：这里**不能用 tomllib** —— 它是 Python 3.11 才进标准库的，
+      # 用它在 3.9/3.10 上会直接 ModuleNotFoundError，把一个环境限制
+      # 伪装成「依赖检查失败」。改用正则读 pyproject，任何版本都能跑。
       - name: Show that the package really has zero runtime dependencies
+        shell: bash
         run: |
-          python -c "import tomllib,pathlib;d=tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8'));print('dependencies =', d['project']['dependencies']);assert d['project']['dependencies']==[], 'runtime deps must stay empty'"
+          python - <<'PY'
+          import pathlib, re
+          text = pathlib.Path('pyproject.toml').read_text(encoding='utf-8')
+          m = re.search(r'(?ms)^dependencies\s*=\s*\[(.*?)\]', text)
+          assert m, 'dependencies key missing from pyproject.toml'
+          body = m.group(1).strip()
+          print('dependencies =', body or '<empty>')
+          assert body == '', 'runtime dependencies must stay empty'
+          PY
 
       - name: Unit tests (stdlib unittest, no install required)
         run: python -m unittest discover -s tests -v
