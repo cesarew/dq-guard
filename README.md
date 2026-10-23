@@ -1,5 +1,7 @@
 # dq-guard
 
+[![CI](https://github.com/cesarew/dq-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/cesarew/dq-guard/actions/workflows/ci.yml)
+
 **零依赖的声明式数据质量检查工具**，对中文业务数据有一等公民支持。
 
 > **尚未发布到 PyPI**（名称 `dq-guard` 已确认可用，见路线图）。因此现在**没有** `pip install`
