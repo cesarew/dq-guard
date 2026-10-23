@@ -73,3 +73,66 @@ jobs:
           name: dq-report-${{ matrix.os }}-py${{ matrix.python-version }}
           path: out/
           if-no-files-found: ignore
+
+  # 打包回归防护：单元测试全绿也可能打不出可安装的包。
+  # 这个 job 用**隔离构建**（默认行为，会按 build-system.requires 现场装
+  # setuptools>=77），所以它同时验证了两件事：
+  #   1) PEP 639 的 license 写法在当前 setuptools 下不告警、元数据正确；
+  #   2) build-system.requires 里那个版本 pin 真的能被解析出来。
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Build sdist and wheel (isolated, resolves build-system.requires)
+        run: |
+          python -m pip install --upgrade build twine
+          python -m build
+
+      - name: twine check — fails on metadata problems
+        run: python -m twine check dist/*
+
+      - name: Install the wheel with --no-deps and run the console script
+        run: |
+          python -m venv /tmp/wheelvenv
+          /tmp/wheelvenv/bin/pip install --no-deps dist/*.whl
+          /tmp/wheelvenv/bin/dq-guard --list-rules
+          /tmp/wheelvenv/bin/dq-guard examples/rules.json --quiet --fail-on none
+
+      - name: Assert metadata — no runtime deps, PEP 639 license expression
+        shell: bash
+        run: |
+          python - <<'PY'
+          import glob, sys, zipfile
+
+          whl = glob.glob("dist/*.whl")[0]
+          with zipfile.ZipFile(whl) as z:
+              meta = z.read(next(n for n in z.namelist() if n.endswith("METADATA"))).decode()
+          names = [n for n in zipfile.ZipFile(whl).namelist() if "LICENSE" in n.upper()]
+
+          requires = [l for l in meta.splitlines() if l.startswith("Requires-Dist:")]
+          hard = [r for r in requires if "extra ==" not in r]
+          print("Requires-Dist (all):", requires or "<none>")
+          print("hard requirements  :", hard or "<none>")
+          print("License-Expression :", "yes" if "License-Expression: MIT" in meta else "MISSING")
+          print("License-File       :", "yes" if "License-File: LICENSE" in meta else "MISSING")
+          print("LICENSE in wheel   :", names or "MISSING")
+
+          assert not hard, f"wheel declares runtime deps: {hard}"
+          assert "License-Expression: MIT" in meta, "missing PEP 639 License-Expression"
+          assert "License-File: LICENSE" in meta, "missing License-File"
+          assert names, "LICENSE not shipped inside the wheel"
+          print("metadata ok")
+          PY
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
