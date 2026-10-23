@@ -2,9 +2,12 @@
 
 **零依赖的声明式数据质量检查工具**，对中文业务数据有一等公民支持。
 
+> **尚未发布到 PyPI**（名称 `dq-guard` 已确认可用，见路线图）。因此现在**没有** `pip install`
+> 可用，也没有 `dq-guard` 这个全局命令——请从源码运行，见 [快速开始](#快速开始)。
+
 ```bash
-pip install dq-guard
-dq-guard examples/rules.json
+git clone https://github.com/cesarew/dq-guard.git && cd dq-guard
+python -m dq_guard examples/rules.json     # 打印 Markdown 报告，检出问题退出码 1
 ```
 
 ---
@@ -161,6 +164,7 @@ python -m unittest discover -s tests -v     # 71 个测试，零依赖
 
 ## 路线图
 
+- [ ] **发布到 PyPI**（`pip install dq-guard` + `dq-guard` 全局命令）
 - [ ] 增量检查：只检查新增的日期分区
 - [ ] 基线对比：与上一期指标对比，捕捉异常漂移
 - [ ] `--fix` 建议模式（只给建议，不改数据）
