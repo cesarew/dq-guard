@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.9", "3.11", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Show that the package really has zero runtime dependencies
+        run: |
+          python -c "import tomllib,pathlib;d=tomllib.loads(pathlib.Path('pyproject.toml').read_text(encoding='utf-8'));print('dependencies =', d['project']['dependencies']);assert d['project']['dependencies']==[], 'runtime deps must stay empty'"
+
+      - name: Unit tests (stdlib unittest, no install required)
+        run: python -m unittest discover -s tests -v
+
+      - name: Smoke test — example config must report failures and exit 1
+        shell: bash
+        run: |
+          set +e
+          python -m dq_guard examples/rules.json --report out/report.md
+          code=$?
+          set -e
+          echo "exit code = $code"
+          test "$code" -eq 1 || { echo "expected exit code 1"; exit 1; }
+          test -f out/report.md
+
+      - name: Smoke test — --fail-on none must exit 0
+        shell: bash
+        run: python -m dq_guard examples/rules.json --quiet --fail-on none
+
+      - name: Only YAML config requires PyYAML
+        run: |
+          pip install PyYAML
+          python -m dq_guard examples/rules.yaml --quiet --fail-on none
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dq-report-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: out/
+          if-no-files-found: ignore

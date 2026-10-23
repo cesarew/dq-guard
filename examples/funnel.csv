@@ -1,0 +1,5 @@
+stage_order,stage_name,input_rows,output_rows
+1,raw,150,150
+2,dedup,150,147
+3,quality,147,150
+4,export,150,150

@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dq-guard"
+version = "0.1.0"
+description = "Zero-dependency declarative data quality checks for CSV/TSV, with first-class support for Chinese business data."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "cesarew", email = "cesarew@users.noreply.github.com" },
+]
+keywords = [
+  "data-quality",
+  "data-governance",
+  "data-engineering",
+  "csv",
+  "cli",
+  "china",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Database",
+]
+
+# 核心零依赖：一个都不写
+dependencies = []
+
+[project.optional-dependencies]
+yaml = ["PyYAML>=6.0"]
+dev = ["pytest>=7", "ruff>=0.4"]
+
+[project.scripts]
+dq-guard = "dq_guard.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/cesarew/dq-guard"
+Issues = "https://github.com/cesarew/dq-guard/issues"
+
+[tool.setuptools.packages.find]
+include = ["dq_guard*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

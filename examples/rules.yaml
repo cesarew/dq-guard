@@ -1,0 +1,79 @@
+# dq-guard 规则配置（YAML 版）
+#
+# 与 examples/rules.json 等价。YAML 需要安装 PyYAML：
+#   pip install "dq-guard[yaml]"
+# 核心库本身零依赖，JSON 格式不需要任何第三方包。
+
+version: 1
+
+dataset:
+  path: sample.csv          # 相对本文件所在目录解析
+  format: csv
+  encoding: utf-8-sig
+
+report:
+  format: markdown
+  path: null
+  samples: 5
+  title: 换电柜仓位数据质量报告（YAML 配置）
+
+options:
+  fail_on: error
+  as_of: "2026-10-19"
+
+rules:
+  - id: box_id_not_null
+    type: not_null
+    column: box_id
+    severity: error
+    description: 仓位编号必填——缺失就无法定位到具体仓位
+    evidence: [station_id, box_id]
+
+  - id: soc_not_null
+    type: not_null
+    column: soc
+    severity: error
+    description: 电量率必填；缺失时下游指标会静默降级
+    evidence: [station_id, box_id, soc]
+
+  - id: box_id_unique
+    type: unique
+    columns: [box_id]
+    severity: error
+    description: 仓位编号在单期内必须唯一
+    evidence: [station_id, box_id]
+
+  - id: latitude_in_range
+    type: range
+    column: latitude
+    min: 39.0
+    max: 41.1
+    severity: error
+    description: 北京区域纬度范围；两列写反时经度值会落在这里被抓住
+    evidence: [station_id, box_id, latitude, longitude]
+
+  - id: longitude_in_range
+    type: range
+    column: longitude
+    min: 115.4
+    max: 117.6
+    severity: error
+    description: 北京区域经度范围
+    evidence: [station_id, box_id, latitude, longitude]
+
+  - id: soc_in_range
+    type: range
+    column: soc
+    min: 0
+    max: 100
+    severity: error
+    description: 电量率是百分数，必须落在 [0, 100]
+    evidence: [station_id, box_id, soc]
+
+  - id: status_in_enum
+    type: enum
+    column: status
+    values: ["0", "1", "2"]
+    severity: warn
+    description: 0=正常 1=故障 2=禁用；出现其他值说明状态字典需要更新
+    evidence: [station_id, box_id, status]

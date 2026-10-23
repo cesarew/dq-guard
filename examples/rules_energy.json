@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "dataset": {
+    "path": "energy.csv",
+    "format": "csv",
+    "encoding": "utf-8-sig"
+  },
+  "report": {
+    "format": "markdown",
+    "path": null,
+    "samples": 5,
+    "title": "用电量单位一致性检查"
+  },
+  "options": {
+    "fail_on": "error"
+  },
+  "rules": [
+    {
+      "id": "energy_unit_consistent",
+      "type": "unit_consistency",
+      "primary": "battery_kwh",
+      "secondary": "quantity_raw",
+      "factor": 0.001,
+      "tolerance": 0.05,
+      "severity": "error",
+      "description": "主字段「度」应等于备用字段「千分之一度」×0.001；主字段为 0 时跳过（降级场景）",
+      "evidence": ["device_id", "battery_kwh", "quantity_raw"]
+    }
+  ]
+}

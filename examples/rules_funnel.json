@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "dataset": {
+    "path": "funnel.csv",
+    "format": "csv",
+    "encoding": "utf-8-sig"
+  },
+  "report": {
+    "format": "markdown",
+    "path": null,
+    "samples": 5,
+    "title": "语料清洗漏斗不变量检查"
+  },
+  "options": {
+    "fail_on": "error"
+  },
+  "rules": [
+    {
+      "id": "funnel_monotonic",
+      "type": "funnel",
+      "input_column": "input_rows",
+      "output_column": "output_rows",
+      "name_column": "stage_name",
+      "strict": true,
+      "severity": "error",
+      "description": "各阶段产出不得多于投入，且下一阶段投入应等于上一阶段产出"
+    }
+  ]
+}
