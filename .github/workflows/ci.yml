@@ -66,6 +66,11 @@ jobs:
           pip install PyYAML
           python -m dq_guard examples/rules.yaml --quiet --fail-on none
 
+      # examples/demo.py 自带 23 项断言（三种退出码 + 修复后必须转绿）。
+      # 跑它等于把「文档里承诺的行为」也纳入回归，避免 demo 随实现漂移。
+      - name: Demo (self-verifying, 23 assertions)
+        run: python examples/demo.py
+
       - name: Upload report artifact
         if: always()
         uses: actions/upload-artifact@v4
